@@ -114,8 +114,11 @@ for d, dataset in tqdm(enumerate(datasets), leave=False, total=len(datasets)):
     for idx, (img_tensor, label) in tqdm(enumerate(dataset), desc=f"Dataset {datasets.environments[d]}", leave=False, total=len(dataset)):
         save_dir_domain_label = save_dir_domain + str(label.item()) + '/'
         os.makedirs(save_dir_domain_label, exist_ok=True)
-        # Convert to PIL image (optional if using save_image)
         
+        resize = transforms.Resize((64, 64))
+        img_tensor = resize(img_tensor)
+        
+        # Convert to PIL image (optional if using save_image)
         pil_img = transforms.ToPILImage()(img_tensor)
 
         # Create filename
