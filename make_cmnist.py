@@ -134,6 +134,7 @@ def main(args):
                     pil_img = pil_img.convert('RGB')
                 pil_img.save(filepath, "JPEG")
 
+            assert(os.path.exists(filepath), f"File {filepath} does not exist!")
             # Accumulate for CSV
             all_filenames.append(domain_label_file)
             all_labels.append(label.item())
