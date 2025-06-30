@@ -121,20 +121,16 @@ def main(args):
             filepath = os.path.join(save_dir_domain_label, filename)
             domain_label_file = os.path.join(f"{datasets.environments[d]}", f"{label.item()}", filename)
 
-            if not args.skip_image_creation:
-                if args.target_image_size is not None:
-                    resize = transforms.Resize((args.target_image_size, args.target_image_size))
-                    img_tensor = resize(img_tensor)
+            if args.target_image_size is not None:
+                resize = transforms.Resize((args.target_image_size, args.target_image_size))
+                img_tensor = resize(img_tensor)
 
-                # Convert to PIL image
-                pil_img = transforms.ToPILImage()(img_tensor)
+            # Convert to PIL image
+            pil_img = transforms.ToPILImage()(img_tensor)
 
-                # Save using PIL
-                with open(filepath, 'wb') as f:
-                    pil_img.save(f, "JPEG")
+            # Save using PIL
+            pil_img.save(filepath, "JPEG")
 
-            assert os.path.exists(save_dir_domain_label), f"Directory {save_dir_domain_label} does not exist!"
-            assert os.path.exists(filepath), f"File {filepath} does not exist!"
             # Accumulate for CSV
             all_filenames.append(domain_label_file)
             all_labels.append(label.item())
@@ -148,16 +144,14 @@ def main(args):
                 "filename": all_filenames[:tr_len],
                 "label":    all_labels[:tr_len],
             })
-            with open(train_fp, 'w') as f:
-                df.to_csv(f, sep=' ', header=False, index=False)
+            df.to_csv(train_fp, sep=' ', header=False, index=False, mode='w')
 
             # Create a crossval dataframe
             df = pd.DataFrame({
                 "filename": all_filenames[tr_len:],
                 "label":    all_labels[tr_len:],
             })
-            with open(val_fp, 'w') as f:
-                df.to_csv(f, sep=' ', header=False, index=False)           
+            df.to_csv(val_fp, sep=' ', header=False, index=False, mode='w')           
         else:
             if datasets.environments[d] not in args.val_domains_only:
                 # Create a training dataframe
@@ -165,8 +159,7 @@ def main(args):
                     "filename": all_filenames,
                     "label":    all_labels,
                 })
-                with open(train_fp, 'w') as f:
-                    df.to_csv(f, sep=' ', header=False, index=False)
+                df.to_csv(train_fp, sep=' ', header=False, index=False, mode='w')
                 open(val_fp, "w").close()
             else:
                 # Create a crossval dataframe
@@ -175,14 +168,12 @@ def main(args):
                     "label":    all_labels,
                 })
                 open(train_fp, "w").close()
-                with open(val_fp, 'w') as f:
-                    df.to_csv(f, sep=' ', header=False, index=False)
+                df.to_csv(val_fp, sep=' ', header=False, index=False, mode='w')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Create CMNIST dataset')
     parser.add_argument('--output_dir', type=str, default="./data/DataSets/CMNIST/")
     parser.add_argument('--target_image_size', type=int, default=64)
-    parser.add_argument('--skip_image_creation', action='store_true')
     parser.add_argument('--val_domains_only', type=str, nargs='+', default=None, help='Use this to assign some domains ONLY as validation ones.')
     args = parser.parse_args()
     
