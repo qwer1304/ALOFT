@@ -130,9 +130,8 @@ def main(args):
                 pil_img = transforms.ToPILImage()(img_tensor)
 
                 # Save using PIL
-                if False and pil_img.mode == 'LA':
-                    pil_img = pil_img.convert('RGB')
-                pil_img.save(filepath, "JPEG")
+                with open(filepath, 'w') as f:
+                    pil_img.save(f, "JPEG")
 
             assert(os.path.exists(filepath), f"File {filepath} does not exist!")
             # Accumulate for CSV
