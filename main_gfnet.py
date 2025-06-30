@@ -205,6 +205,7 @@ domain_map = {
     'OfficeHome': ['Art', 'Clipart', 'Product', 'RealWorld'],
     'VLCS': ["CALTECH", "LABELME", "PASCAL", "SUN"],
     'digits_dg': ['mnist', 'mnist_m', 'svhn', 'syn'],
+    'CMNIST': ['p90', 'p85', 'p80', 'p75', 'm90'],
 }
 classes_map = {
     'PACS': 7,
@@ -212,6 +213,7 @@ classes_map = {
     'OfficeHome': 65,
     'VLCS': 5,
     'digits_dg': 32,
+    'CMNIST': 2,
 }
 val_size_map = {
     'PACS': 0.1,
@@ -219,6 +221,7 @@ val_size_map = {
     'OfficeHome': 0.1,
     'VLCS': 0.3,
     'digits_dg': 0.2,
+    'CMNIST': 0.15,
 }
 
 

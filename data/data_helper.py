@@ -33,8 +33,10 @@ def get_train_dataloader(args, patches):
 
     if "PACS" in args.data_root:
         dataset_path = join(args.data_root, "kfold")
+    elif "CMNIST" in args.data_root:
+        dataset_path = join(args.data_root, "kfold")
     elif args.data == "miniDomainNet":
-        dataset_path = "/data/DataSets/" + "DomainNet"
+        dataset_path = join(args.data_root, "DomainNet")
     else:
         dataset_path = args.data_root
 
@@ -42,6 +44,12 @@ def get_train_dataloader(args, patches):
         if args.data == "PACS":
             name_train, name_val, labels_train, labels_val, domain_labels_train, domain_labels_val = \
                 get_split_dataset_info_from_txt(txt_path=join(args.data_root, "pacs_label"), domain=dname,
+                                            domain_label=i+1)
+                # get_split_dataset_info_from_txt(txt_path=join(args.data_root, "splits"), domain=dname,
+                #                             domain_label=i + 1)
+        elif args.data == "CMNIST":
+            name_train, name_val, labels_train, labels_val, domain_labels_train, domain_labels_val = \
+                get_split_dataset_info_from_txt(txt_path=join(args.data_root, "cmnist_label"), domain=dname,
                                             domain_label=i+1)
                 # get_split_dataset_info_from_txt(txt_path=join(args.data_root, "splits"), domain=dname,
                 #                             domain_label=i + 1)
@@ -87,14 +95,16 @@ def get_train_dataloader(args, patches):
     val_dataset = ConcatDataset(val_datasets)
 
     loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=4,
-                                         pin_memory=True, drop_last=True)
+                                         pin_memory=torch.cuda.is_available(), drop_last=True)
     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=args.batch_size, shuffle=True, num_workers=4,
-                                             pin_memory=True, drop_last=False)
+                                             pin_memory=torch.cuda.is_available(), drop_last=False)
     return loader, val_loader
 
 
 def get_val_dataloader(args, patches=False, tSNE_flag=0):
     if "PACS" in args.data_root:
+        dataset_path = join(args.data_root, "kfold")
+    if "CMNIST" in args.data_root:
         dataset_path = join(args.data_root, "kfold")
     elif args.data == "miniDomainNet":
         dataset_path = "/data/DataSets/" + "DomainNet"
@@ -133,7 +143,7 @@ def get_val_dataloader(args, patches=False, tSNE_flag=0):
 
     dataset = ConcatDataset([val_dataset])
     loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=4,
-                                         pin_memory=True, drop_last=False)
+                                         pin_memory=torch.cuda.is_available(), drop_last=False)
     return loader
 
 
@@ -190,8 +200,8 @@ def get_val_transformer(args):
 #                               patches=patches, args=args))
 #     dataset = ConcatDataset(datasets)
 #     val_dataset = ConcatDataset(val_datasets)
-#     loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=4, pin_memory=True, drop_last=True)
-#     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4, pin_memory=True, drop_last=False)
+#     loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=4, pin_memory=torch.cuda.is_available(), drop_last=True)
+#     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4, pin_memory=torch.cuda.is_available(), drop_last=False)
 #     return loader, val_loader
 
 
@@ -203,5 +213,5 @@ def get_val_transformer(args):
 #         val_dataset = Subset(val_dataset, args.limit_target)
 #         print("Using %d subset of val dataset" % args.limit_target)
 #     dataset = ConcatDataset([val_dataset])
-#     loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=False, num_workers=4, pin_memory=True, drop_last=False)
+#     loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=False, num_workers=4, pin_memory=torch.cuda.is_available(), drop_last=False)
 #     return loader

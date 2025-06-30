@@ -4,14 +4,15 @@ from functools import partial
 from collections import OrderedDict
 from copy import Error, deepcopy
 from re import S
-from numpy.lib.arraypad import pad
+#from numpy.lib.arraypad import pad
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
-from timm.models.layers import DropPath, to_2tuple, trunc_normal_
+from timm.layers import DropPath, to_2tuple, trunc_normal_
+#from timm.models.layers import DropPath, to_2tuple, trunc_normal_
 import torch.fft
 from torch.nn.modules.container import Sequential
 import random

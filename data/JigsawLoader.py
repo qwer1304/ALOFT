@@ -7,6 +7,8 @@ from PIL import Image
 from random import sample, random
 import sys
 import os
+from functools import partial
+
 
 
 def get_random_subset(names, labels, percent):
@@ -112,7 +114,7 @@ def get_split_domain_info_from_dir(domain_path, dataset_name=None, val_percentag
         domain_label_val = [domain_label for i in range(len(labels_val))]
         return name_train, name_val, labels_train, labels_val, domain_label_train, domain_label_val
 
-    elif dataset_name == "OfficeHome" or "PACS" in dataset_name:
+    elif dataset_name == "OfficeHome" or "PACS" or "CMNIST" in dataset_name:
         names, labels = [], []
         classes, class_to_idx = find_classes(domain_path)
         for i, item in enumerate(classes):
@@ -133,6 +135,19 @@ def get_split_domain_info_from_dir(domain_path, dataset_name=None, val_percentag
 
 def get_split_dataset_info_from_txt(txt_path, domain, domain_label, val_percentage=None):
     if "PACS" in txt_path:
+        train_name = "_train_kfold.txt"
+        val_name = "_crossval_kfold.txt"
+
+        train_txt = txt_path + "/" + domain + train_name
+        val_txt = txt_path + "/" + domain + val_name
+
+        train_names, train_labels = _dataset_info(train_txt)
+        val_names, val_labels = _dataset_info(val_txt)
+        train_domain_labels = [domain_label for i in range(len(train_labels))]
+        val_domain_labels = [domain_label for i in range(len(val_labels))]
+        return train_names, val_names, train_labels, val_labels, train_domain_labels, val_domain_labels
+
+    if "CMNIST" in txt_path:
         train_name = "_train_kfold.txt"
         val_name = "_crossval_kfold.txt"
 
@@ -172,7 +187,12 @@ def get_split_dataset_info(txt_list, val_percentage):
     names, labels = _dataset_info(txt_list)
     return get_random_subset(names, labels, val_percentage)
 
+def make_grid_fn(x, grid_size):
+    return torchvision.utils.make_grid(x, grid_size, padding=0)
 
+def identity(x):
+    return x
+    
 # 原始Jigsaw
 class JigsawDataset(data.Dataset):
     def __init__(self, names, labels, jig_classes=100, img_transformer=None, tile_transformer=None, patches=True, bias_whole_image=None):
@@ -189,11 +209,9 @@ class JigsawDataset(data.Dataset):
         self._image_transformer = img_transformer
         self._augment_tile = tile_transformer
         if patches:
-            self.returnFunc = lambda x: x
+            self.returnFunc = identity
         else:
-            def make_grid(x):
-                return torchvision.utils.make_grid(x, self.grid_size, padding=0)
-            self.returnFunc = make_grid
+            self.returnFunc = partial(make_grid_fn, grid_size=self.grid_size)
 
     def get_tile(self, img, n):
         w = float(img.size[0]) / self.grid_size
@@ -313,12 +331,9 @@ class JigsawNewDataset(data.Dataset):
         self._image_transformer = img_transformer
         self._augment_tile = tile_transformer
         if patches:
-            self.returnFunc = lambda x: x
+            self.returnFunc = identity
         else:
-            def make_grid(x):
-                return torchvision.utils.make_grid(x, self.grid_size, padding=0)
-
-            self.returnFunc = make_grid
+            self.returnFunc = partial(make_grid_fn, grid_size=self.grid_size)
 
     def get_tile(self, img, n):
         w = float(img.size[0]) / self.grid_size

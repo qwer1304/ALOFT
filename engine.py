@@ -38,7 +38,8 @@ def train_one_epoch(model: torch.nn.Module, criterion: DistillationLoss,
         if mixup_fn is not None:
             samples, targets = mixup_fn(samples, targets)
 
-        with torch.cuda.amp.autocast():
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        with torch.autocast(device):
             outputs = model(samples)
             loss = criterion(samples, outputs, targets.long())
 
@@ -55,7 +56,8 @@ def train_one_epoch(model: torch.nn.Module, criterion: DistillationLoss,
         loss_scaler(loss, optimizer, clip_grad=max_norm,
                         parameters=model.parameters(), create_graph=is_second_order)
     
-        torch.cuda.synchronize()
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
         if model_ema is not None:
             model_ema.update(model)
 
@@ -82,7 +84,9 @@ def evaluate(data_loader, model, device):
         target = target.to(device, non_blocking=True)
 
         # compute output
-        with torch.cuda.amp.autocast():
+        
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        with torch.autocast(device):
             output = model(images)
             loss = criterion(output, target)
 
@@ -115,7 +119,8 @@ def get_feature(data_loader, model, device, norm_flag=0):
         target = target.to(device, non_blocking=True)
 
         # compute output
-        with torch.cuda.amp.autocast():
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        with torch.autocast(device):
             output, _ = model.forward_features(images)
             if norm_flag == 1:
                 output = F.normalize(output, p=2, dim=1)
