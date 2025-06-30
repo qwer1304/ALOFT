@@ -112,7 +112,7 @@ def main(args):
         all_labels = []
 
         for idx, (img_tensor, label) in tqdm(enumerate(dataset), desc=f"Dataset {datasets.environments[d]}", leave=False, total=len(dataset)):
-            label += 1 # Label is expected to be 1..N
+            label = label + 1 # Label is expected to be 1..N
             save_dir_domain_label = save_dir_domain + str(label.item()) + '/'
             os.makedirs(save_dir_domain_label, exist_ok=True)
 
