@@ -133,8 +133,8 @@ def main(args):
                 with open(filepath, 'wb') as f:
                     pil_img.save(f, "JPEG")
 
-            assert(os.path.exists(save_dir_domain_label), f"Directory {save_dir_domain_label} does not exist!")
-            assert(os.path.exists(filepath), f"File {filepath} does not exist!")
+            assert os.path.exists(save_dir_domain_label), f"Directory {save_dir_domain_label} does not exist!"
+            assert os.path.exists(filepath), f"File {filepath} does not exist!"
             # Accumulate for CSV
             all_filenames.append(domain_label_file)
             all_labels.append(label.item())
