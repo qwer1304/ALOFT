@@ -98,13 +98,15 @@ save_dir_prefix = "./data/DataSets/CMNIST/"
 # datasets is a list of per-environment TensorDatasets (x,y)
 save_dir_raw = save_dir_prefix + 'raw/'
 os.makedirs(save_dir_raw, exist_ok=True)
-save_dir_labels = save_dir_prefix + 'cmnist_labels/'
+save_dir_labels = save_dir_prefix + 'cmnist_label/'
 os.makedirs(save_dir_labels, exist_ok=True)
+save_dir_kfold = save_dir_prefix + 'kfold/'
+os.makedirs(save_dir_kfold, exist_ok=True)
 
 datasets = ColoredMNIST(save_dir_raw)
 
 for d, dataset in tqdm(enumerate(datasets), leave=False, total=len(datasets)):
-    save_dir_domain = save_dir_prefix + 'kfold/' + datasets.environments[d] + '/' 
+    save_dir_domain = save_dir_kfold + datasets.environments[d] + '/' 
     os.makedirs(save_dir_domain, exist_ok=True)
     all_filenames = []
     all_labels = []
@@ -117,8 +119,9 @@ for d, dataset in tqdm(enumerate(datasets), leave=False, total=len(datasets)):
         pil_img = transforms.ToPILImage()(img_tensor)
 
         # Create filename
-        filename = f"{idx:05d}_{label.item()}.jpg"
+        filename = f"{idx:05d}.jpg"
         filepath = os.path.join(save_dir_domain_label, filename)
+        domain_label_file = os.path.join(f"{environments[d]", f"{label.item()}, filename)
 
         # Save using PIL
         if False and pil_img.mode == 'LA':
@@ -126,7 +129,7 @@ for d, dataset in tqdm(enumerate(datasets), leave=False, total=len(datasets)):
         pil_img.save(filepath, "JPEG")
         
         # Accumulate for CSV
-        all_filenames.append(filepath)
+        all_filenames.append(domain_label_file)
         all_labels.append(label.item())
 
     # Create a training dataframe
