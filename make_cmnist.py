@@ -105,13 +105,13 @@ def main(args):
 
     datasets = ColoredMNIST(save_dir_raw)
 
-    for d, dataset in tqdm(enumerate(datasets), leave=False, total=len(datasets)):
+    for d, dataset in enumerate(datasets): #tqdm(enumerate(datasets), leave=False, total=len(datasets)):
         save_dir_domain = save_dir_kfold + datasets.environments[d] + '/' 
         os.makedirs(save_dir_domain, exist_ok=True)
         all_filenames = []
         all_labels = []
 
-        for idx, (img_tensor, label) in tqdm(enumerate(dataset), desc=f"Dataset {datasets.environments[d]}", leave=False, total=len(dataset)):
+        for idx, (img_tensor, label) in enumerate(dataset): # tqdm(enumerate(dataset), desc=f"Dataset {datasets.environments[d]}", leave=False, total=len(dataset)):
             label += 1 # Label is expected to be 1..N
             save_dir_domain_label = save_dir_domain + str(label.item()) + '/'
             os.makedirs(save_dir_domain_label, exist_ok=True)
