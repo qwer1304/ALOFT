@@ -1,3 +1,4 @@
+import argparse
 import os
 import torch
 from torchvision import transforms
@@ -93,62 +94,94 @@ class ColoredMNIST(MultipleEnvironmentMNIST):
     def torch_xor_(self, a, b):
         return (a - b).abs()
 
-save_dir_prefix = "./data/DataSets/CMNIST/"
+def main(args):
+    # datasets is a list of per-environment TensorDatasets (x,y)
+    save_dir_raw = args.output_dir + 'raw/'
+    os.makedirs(save_dir_raw, exist_ok=True)
+    save_dir_labels = args.output_dir + 'cmnist_label/'
+    os.makedirs(save_dir_labels, exist_ok=True)
+    save_dir_kfold = args.output_dir + 'kfold/'
+    os.makedirs(save_dir_kfold, exist_ok=True)
 
-# datasets is a list of per-environment TensorDatasets (x,y)
-save_dir_raw = save_dir_prefix + 'raw/'
-os.makedirs(save_dir_raw, exist_ok=True)
-save_dir_labels = save_dir_prefix + 'cmnist_label/'
-os.makedirs(save_dir_labels, exist_ok=True)
-save_dir_kfold = save_dir_prefix + 'kfold/'
-os.makedirs(save_dir_kfold, exist_ok=True)
+    datasets = ColoredMNIST(save_dir_raw)
 
-datasets = ColoredMNIST(save_dir_raw)
+    for d, dataset in tqdm(enumerate(datasets), leave=False, total=len(datasets)):
+        save_dir_domain = save_dir_kfold + datasets.environments[d] + '/' 
+        os.makedirs(save_dir_domain, exist_ok=True)
+        all_filenames = []
+        all_labels = []
 
-for d, dataset in tqdm(enumerate(datasets), leave=False, total=len(datasets)):
-    save_dir_domain = save_dir_kfold + datasets.environments[d] + '/' 
-    os.makedirs(save_dir_domain, exist_ok=True)
-    all_filenames = []
-    all_labels = []
+        for idx, (img_tensor, label) in tqdm(enumerate(dataset), desc=f"Dataset {datasets.environments[d]}", leave=False, total=len(dataset)):
+            label += 1 # Label is expected to be 1..N
+            save_dir_domain_label = save_dir_domain + str(label.item()) + '/'
+            os.makedirs(save_dir_domain_label, exist_ok=True)
 
-    for idx, (img_tensor, label) in tqdm(enumerate(dataset), desc=f"Dataset {datasets.environments[d]}", leave=False, total=len(dataset)):
-        label += 1 # Label is expected to be 1..N
-        save_dir_domain_label = save_dir_domain + str(label.item()) + '/'
-        os.makedirs(save_dir_domain_label, exist_ok=True)
-        
-        resize = transforms.Resize((64, 64))
-        img_tensor = resize(img_tensor)
-        
-        # Convert to PIL image (optional if using save_image)
-        pil_img = transforms.ToPILImage()(img_tensor)
+            # Create filename
+            filename = f"{idx:05d}.jpg"
+            filepath = os.path.join(save_dir_domain_label, filename)
+            domain_label_file = os.path.join(f"{datasets.environments[d]}", f"{label.item()}", filename)
 
-        # Create filename
-        filename = f"{idx:05d}.jpg"
-        filepath = os.path.join(save_dir_domain_label, filename)
-        domain_label_file = os.path.join(f"{datasets.environments[d]}", f"{label.item()}", filename)
+            if not args.skip_image_creation:
+                if args.target_image_size is not None:
+                    resize = transforms.Resize((args.target_image_size, args.target_image_size))
+                    img_tensor = resize(img_tensor)
 
-        # Save using PIL
-        if False and pil_img.mode == 'LA':
-            pil_img = pil_img.convert('RGB')
-        pil_img.save(filepath, "JPEG")
-        
-        # Accumulate for CSV
-        all_filenames.append(domain_label_file)
-        all_labels.append(label.item())
+                # Convert to PIL image
+                pil_img = transforms.ToPILImage()(img_tensor)
 
-    # Create a training dataframe
-    tr_len = int(len(all_filenames) * 6 / 7) # 60000 - training, 10000 - testing
-    df = pd.DataFrame({
-        "filename": all_filenames[:tr_len],
-        "label":    all_labels[:tr_len],
-    })
-    df.to_csv(os.path.join(save_dir_labels, datasets.environments[d]+'_train_kfold.txt'), sep=' ', header=False, index=False, mode='w')
+                # Save using PIL
+                if False and pil_img.mode == 'LA':
+                    pil_img = pil_img.convert('RGB')
+                pil_img.save(filepath, "JPEG")
 
-    # Create a test dataframe
-    df = pd.DataFrame({
-        "filename": all_filenames[tr_len:],
-        "label":    all_labels[tr_len:],
-    })
-    df.to_csv(os.path.join(save_dir_labels, datasets.environments[d]+'_crossval_kfold.txt'), sep=' ', header=False, index=False, mode='w')
+            # Accumulate for CSV
+            all_filenames.append(domain_label_file)
+            all_labels.append(label.item())
+
+        tr_len = int(len(all_filenames) * 6 / 7) # 60000 - training, 10000 - testing
+        if args.val_domains_only is None:
+            # Create a training dataframe
+            df = pd.DataFrame({
+                "filename": all_filenames[:tr_len],
+                "label":    all_labels[:tr_len],
+            })
+            df.to_csv(os.path.join(save_dir_labels, datasets.environments[d]+'_train_kfold.txt'), sep=' ', header=False, index=False, mode='w')
+
+            # Create a crossval dataframe
+            df = pd.DataFrame({
+                "filename": all_filenames[tr_len:],
+                "label":    all_labels[tr_len:],
+            })
+            df.to_csv(os.path.join(save_dir_labels, datasets.environments[d]+'_crossval_kfold.txt'), sep=' ', header=False, index=False, mode='w')
+            
+        else:
+            train_fp = os.path.join(save_dir_labels, datasets.environments[d]+'_train_kfold.txt')
+            val_fp = os.path.join(save_dir_labels, datasets.environments[d]+'_crossval_kfold.txt')
+            if datasets.environments[d] not in args.val_domains_only:
+                # Create a training dataframe
+                df = pd.DataFrame({
+                    "filename": all_filenames,
+                    "label":    all_labels,
+                })
+                df.to_csv(train_fp, sep=' ', header=False, index=False, mode='w')
+                open(val_fp, "w").close()
+            else:
+                # Create a crossval dataframe
+                df = pd.DataFrame({
+                    "filename": all_filenames,
+                    "label":    all_labels,
+                })
+                open(train_fp, "w").close()
+                df.to_csv(val_fp, sep=' ', header=False, index=False, mode='w')               
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Create CMNIST dataset')
+    parser.add_argument('--output_dir', type=str, default="./data/DataSets/CMNIST/")
+    parser.add_argument('--target_image_size', type=int, default=64)
+    parser.add_argument('--skip_image_creation', action='store_true')
+    parser.add_argument('--val_domains_only', type=str, nargs='+', default=None, help='Use this to assign some domains ONLY as validation ones.')
+    args = parser.parse_args()
+    
+    main(args)
 
 
