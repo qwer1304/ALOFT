@@ -105,13 +105,13 @@ def main(args):
 
     datasets = ColoredMNIST(save_dir_raw)
 
-    for d, dataset in enumerate(datasets): #tqdm(enumerate(datasets), leave=False, total=len(datasets)):
+    for d, dataset in tqdm(enumerate(datasets), leave=False, total=len(datasets)):
         save_dir_domain = save_dir_kfold + datasets.environments[d] + '/' 
         os.makedirs(save_dir_domain, exist_ok=True)
         all_filenames = []
         all_labels = []
 
-        for idx, (img_tensor, label) in enumerate(dataset): # tqdm(enumerate(dataset), desc=f"Dataset {datasets.environments[d]}", leave=False, total=len(dataset)):
+        for idx, (img_tensor, label) in tqdm(enumerate(dataset), desc=f"Dataset {datasets.environments[d]}", leave=False, total=len(dataset)):
             label += 1 # Label is expected to be 1..N
             save_dir_domain_label = save_dir_domain + str(label.item()) + '/'
             os.makedirs(save_dir_domain_label, exist_ok=True)
@@ -139,31 +139,33 @@ def main(args):
             all_labels.append(label.item())
 
         tr_len = int(len(all_filenames) * 6 / 7) # 60000 - training, 10000 - testing
+        train_fp = os.path.join(save_dir_labels, datasets.environments[d]+'_train_kfold.txt')
+        val_fp = os.path.join(save_dir_labels, datasets.environments[d]+'_crossval_kfold.txt')
         if args.val_domains_only is None:
             # Create a training dataframe
             df = pd.DataFrame({
                 "filename": all_filenames[:tr_len],
                 "label":    all_labels[:tr_len],
             })
-            df.to_csv(os.path.join(save_dir_labels, datasets.environments[d]+'_train_kfold.txt'), sep=' ', header=False, index=False, mode='w')
+            with open(train_fp, 'w') as f:
+                df.to_csv(f, sep=' ', header=False, index=False)
 
             # Create a crossval dataframe
             df = pd.DataFrame({
                 "filename": all_filenames[tr_len:],
                 "label":    all_labels[tr_len:],
             })
-            df.to_csv(os.path.join(save_dir_labels, datasets.environments[d]+'_crossval_kfold.txt'), sep=' ', header=False, index=False, mode='w')
-            
+            with open(val_fp, 'w') as f:
+                df.to_csv(f, sep=' ', header=False, index=False)           
         else:
-            train_fp = os.path.join(save_dir_labels, datasets.environments[d]+'_train_kfold.txt')
-            val_fp = os.path.join(save_dir_labels, datasets.environments[d]+'_crossval_kfold.txt')
             if datasets.environments[d] not in args.val_domains_only:
                 # Create a training dataframe
                 df = pd.DataFrame({
                     "filename": all_filenames,
                     "label":    all_labels,
                 })
-                df.to_csv(train_fp, sep=' ', header=False, index=False, mode='w')
+                with open(train_fp, 'w') as f:
+                    df.to_csv(f, sep=' ', header=False, index=False)
                 open(val_fp, "w").close()
             else:
                 # Create a crossval dataframe
@@ -172,7 +174,8 @@ def main(args):
                     "label":    all_labels,
                 })
                 open(train_fp, "w").close()
-                df.to_csv(val_fp, sep=' ', header=False, index=False, mode='w')               
+                with open(val_fp, 'w') as f:
+                    df.to_csv(f, sep=' ', header=False, index=False)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Create CMNIST dataset')
