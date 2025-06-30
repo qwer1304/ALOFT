@@ -121,7 +121,7 @@ for d, dataset in tqdm(enumerate(datasets), leave=False, total=len(datasets)):
         # Create filename
         filename = f"{idx:05d}.jpg"
         filepath = os.path.join(save_dir_domain_label, filename)
-        domain_label_file = os.path.join(f"{environments[d]", f"{label.item()}, filename)
+        domain_label_file = os.path.join(f"{environments[d]", f"{label.item()}", filename)
 
         # Save using PIL
         if False and pil_img.mode == 'LA':
