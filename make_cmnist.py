@@ -130,9 +130,10 @@ def main(args):
                 pil_img = transforms.ToPILImage()(img_tensor)
 
                 # Save using PIL
-                with open(filepath, 'w') as f:
+                with open(filepath, 'wb') as f:
                     pil_img.save(f, "JPEG")
 
+            assert(os.path.exists(save_dir_domain_label), f"Directory {save_dir_domain_label} does not exist!")
             assert(os.path.exists(filepath), f"File {filepath} does not exist!")
             # Accumulate for CSV
             all_filenames.append(domain_label_file)
