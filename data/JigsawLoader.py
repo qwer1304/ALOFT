@@ -62,6 +62,7 @@ def find_classes(dir_name):
 
 def get_split_domain_info_from_dir(domain_path, dataset_name=None, val_percentage=None, domain_label=None):
     # read from the directory
+    print(domain_path)
     domain_name = domain_path.split("/")[-1]
     if dataset_name == "VLCS":
         name_train, name_val, labels_train, labels_val = [], [], [], []
