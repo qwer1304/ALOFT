@@ -116,7 +116,6 @@ def get_val_dataloader(args, patches=False, tSNE_flag=0):
             get_split_dataset_info_from_txt(txt_path=args.data_root, domain=args.target, domain_label=0,
                                             val_percentage=args.val_size)
     else:
-        print(dataset_path)
         name_train, name_val, labels_train, labels_val, domain_label_train, domain_label_val = get_split_domain_info_from_dir(
             join(dataset_path, args.target), dataset_name=args.data, val_percentage=args.val_size, domain_label=0)
 
