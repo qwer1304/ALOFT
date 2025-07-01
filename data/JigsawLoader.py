@@ -116,7 +116,6 @@ def get_split_domain_info_from_dir(domain_path, dataset_name=None, val_percentag
 
     elif dataset_name == "OfficeHome" or "PACS" or "CMNIST" in dataset_name:
         names, labels = [], []
-        print(domain_path)
         classes, class_to_idx = find_classes(domain_path)
         for i, item in enumerate(classes):
             class_path = domain_path + "/" + item
