@@ -240,7 +240,6 @@ def main(args):
     print("Target domain: {}".format(args.target))
     args.data_root = os.path.join(args.data_root, "PACS") if "PACS" in args.data else os.path.join(args.data_root,
                                                                                                    args.data)
-    print(args.data_root, args.data)
     args.n_classes = classes_map[args.data]
     args.n_domains = len(domain)
     args.val_size = val_size_map[args.data]

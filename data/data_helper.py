@@ -31,6 +31,7 @@ def get_train_dataloader(args, patches):
 
     limit = None
 
+    print(args.data_root)
     if "PACS" in args.data_root:
         dataset_path = join(args.data_root, "kfold")
     elif "CMNIST" in args.data_root:
