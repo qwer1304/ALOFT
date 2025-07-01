@@ -104,7 +104,7 @@ def get_train_dataloader(args, patches):
 def get_val_dataloader(args, patches=False, tSNE_flag=0):
     if "PACS" in args.data_root:
         dataset_path = join(args.data_root, "kfold")
-    if "CMNIST" in args.data_root:
+    elif "CMNIST" in args.data_root:
         dataset_path = join(args.data_root, "kfold")
     elif args.data == "miniDomainNet":
         dataset_path = "/data/DataSets/" + "DomainNet"
