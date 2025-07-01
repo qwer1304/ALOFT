@@ -40,6 +40,7 @@ def get_train_dataloader(args, patches):
         dataset_path = join(args.data_root, "DomainNet")
     else:
         dataset_path = args.data_root
+    print(dataset_path)
 
     for i, dname in enumerate(dataset_list):
         if args.data == "PACS":
