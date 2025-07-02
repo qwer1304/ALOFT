@@ -101,6 +101,7 @@ class GlobalFilter(nn.Module):
         w_crop = int(w * sqrt(ratio))
         h_start = h // 2 - h_crop // 2
         w_start = 0
+        print(h_crop, w_crop, h_start, w_start, h, w)
 
         img_abs_ = img_abs.clone()
         if noise_mode != 0:
