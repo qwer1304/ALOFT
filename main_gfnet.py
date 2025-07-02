@@ -543,9 +543,7 @@ def main(args):
         print(f"Accuracy of the network on the {len(data_loader_test.dataset)} test images: {test_stats['acc1']:.2f}%")
 
         max_accuracy_val = max(max_accuracy_val, val_stats["acc1"])
-        print(f'Max accuracy val: {max_accuracy_val:.2f}%')
         max_accuracy_test = max(max_accuracy_test, test_stats["acc1"])
-        print(f'Max accuracy test: {max_accuracy_test:.2f}%')
         
         if max_accuracy_test == test_stats["acc1"]:
             max_test_epoch = epoch
@@ -564,6 +562,10 @@ def main(args):
                 utils.save_on_master({
                     'model': model_without_ddp.state_dict(),
                 }, checkpoint_path)
+
+        print(f'Max accuracy val: {max_accuracy_val:.2f}%', f'Epoch: {max_val_epoch}')
+        print(f'Max accuracy test: {max_accuracy_test:.2f}%', f'Epoch: {max_test_epoch}')
+        print(f'Accuracy test @ max val accuracy: {max_val_test:.2f}%', f'Epoch: {max_val_epoch}')
 
         log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
                      **{f'val_{k}': v for k, v in val_stats.items()},
