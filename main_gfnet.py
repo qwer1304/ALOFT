@@ -479,8 +479,8 @@ def main(args):
                 loss_scaler.load_state_dict(checkpoint['scaler'])
 
     if args.eval:
-        val_stats = evaluate(data_loader_val, model, device)['acc1']
-        test_stats = evaluate(data_loader_test, model, device)['acc1']
+        val_stats = evaluate(data_loader_val, model, device, header='Val:')['acc1']
+        test_stats = evaluate(data_loader_test, model, device, header='Test:')['acc1']
         print(f"Accuracy of the network on the {len(data_loader_val.dataset)} val images: {val_stats:.2f}%")
         print(f"Accuracy of the network on the {len(data_loader_test.dataset)} test images: {test_stats:.2f}%")
         return
@@ -537,18 +537,18 @@ def main(args):
                     'model': model_without_ddp.state_dict(),
                 }, checkpoint_path)
 
-        val_stats = evaluate(data_loader_val, model, device)
+        val_stats = evaluate(data_loader_val, model, device, header='Val:')
         print(f"Accuracy of the network on the {len(data_loader_val.dataset)} val images: {val_stats['acc1']:.2f}%")
-        test_stats = evaluate(data_loader_test, model, device)
+        test_stats = evaluate(data_loader_test, model, device, header='Test:')
         print(f"Accuracy of the network on the {len(data_loader_test.dataset)} test images: {test_stats['acc1']:.2f}%")
 
         max_accuracy_val = max(max_accuracy_val, val_stats["acc1"])
         print(f'Max accuracy val: {max_accuracy_val:.2f}%')
-        print(f"Corresponding test accuracy: {test_stats['acc1']:.2f}%")
         max_accuracy_test = max(max_accuracy_test, test_stats["acc1"])
-        if max_accuracy_val == test_stats["acc1"]:
+        print(f'Max accuracy test: {max_accuracy_test:.2f}%')
+        
+        if max_accuracy_test == test_stats["acc1"]:
             max_test_epoch = epoch
-        # print(f'Max accuracy test: {max_accuracy_test:.2f}%')
 
         if max_accuracy_val == val_stats["acc1"]:
             max_val_test = test_stats['acc1']

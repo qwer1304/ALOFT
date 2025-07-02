@@ -5,8 +5,7 @@ import numpy as np
 from scipy.signal import savgol_filter, find_peaks
 import argparse
 import warnings
-
-
+import functools
 
 def detect_approx_kink(loss_curve, window_length=11, polyorder=2, 
                        percentile_threshold=20, lookahead=5, plot=True, block=True, start_epoch=0):
@@ -86,6 +85,45 @@ def detect_approx_kink(loss_curve, window_length=11, polyorder=2,
         
     return kink_epoch
 
+import functools
+
+class PlotState:
+    def __init__(self):
+        self.markers = []
+        self.annotations = []
+
+def on_click(event, ax, fig, state):
+    if event.inaxes == ax:
+        x_click = event.xdata
+        y_click = event.ydata
+        #print(f"Clicked at x = {x_click:.2f}, y = {y_click:.2f}")
+        point, = ax.plot(x_click, y_click, 'ro')
+        ann = ax.annotate(f"({x_click:.2f}, {y_click:.2f})",
+                    xy=(x_click, y_click), xytext=(x_click + 0.5, y_click),
+                    arrowprops=dict(arrowstyle="->", color='gray'),
+                    fontsize=8)
+        state.markers.append(point)
+        state.annotations.append(ann)
+        fig.canvas.draw_idle()
+
+def on_key(event, fig, ax, state):
+    if event.key == 'c':
+        #print("Clearing all points and annotations!")
+        for marker in state.markers:
+            marker.remove()
+        for ann in state.annotations:
+            ann.remove()
+        state.markers.clear()
+        state.annotations.clear()
+        fig.canvas.draw_idle()
+
+    elif event.key == 'r' and state.markers:
+        state.markers[-1].remove()
+        state.annotations[-1].remove()
+        state.markers.pop()
+        state.annotations.pop()
+        fig.canvas.draw_idle()
+    
 def main(args):
     start_epoch = args.start_epoch
     list_of_dicts = []
@@ -97,7 +135,8 @@ def main(args):
 
     #print(list_of_dicts[0].keys())
 
-    records = q.Q(list_of_dicts[:-1])
+    records = q.Q(list_of_dicts)
+    records = records.filter(lambda obj: 'val_acc1' in obj.keys())
 
     v_acc = records.select('val_acc1')
     te_acc = records.select("test_acc1")
@@ -114,7 +153,7 @@ def main(args):
     approx_stop_epoch = detect_approx_kink(loss_curve, block=False, percentile_threshold=args.percentile_threshold, lookahead=args.lookahead, start_epoch=start_epoch)
     print(f"Approximate suggested stopping epoch: {approx_stop_epoch}")
 
-    plt.figure(figsize=(8, 5))
+    fig = plt.figure(figsize=(8, 5))
     plt.plot(epochs, v_acc, label='val')
     plt.plot(epochs, te_acc, label='test')
     if approx_stop_epoch is not None:
@@ -132,9 +171,12 @@ def main(args):
     plt.title('Val & Test Accuracies')
     plt.legend()
 
+    state = PlotState()
+    fig.canvas.mpl_connect('button_press_event', functools.partial(on_click, ax=ax1, fig=fig, state=state))
+    fig.canvas.mpl_connect('key_press_event', functools.partial(on_key, fig=fig, ax=ax1, state=state))
+
     # Show the plot
     plt.show(block=False)
-
     #---------------------------------------------------------------------------------
     plt.figure(figsize=(8, 5))
     plt.plot(epochs, tr_loss, label='train')
