@@ -30,26 +30,30 @@ def detect_approx_kink(loss_curve, window_length=11, polyorder=2,
     peaks, _ = find_peaks(inverted_deriv[start_epoch:], prominence=0.005) 
 
     # Smooth derivative
+    window_length = min(window_length, len(deriv))
     smooth_deriv = savgol_filter(deriv, window_length=window_length, polyorder=polyorder)
     smooth_2deriv = np.diff(smooth_deriv)
+    smooth_deriv = np.insert(smooth_deriv, 0, -1e-0)
+    smooth_2deriv = np.insert(smooth_2deriv, 0, [-1e-8, -1e-8])
 
     # Define approximate threshold using percentile
     neg_thresh = np.percentile(smooth_deriv[start_epoch:], percentile_threshold)
 
     # Find first point after early plateau where derivative drops below approximate threshold
-    kink_epoch = None
+    kink_epoch = []
+    lookahead = min(len(smooth_deriv), lookahead)
     for i in range(start_epoch, len(smooth_deriv) - lookahead):
-        if np.all((smooth_deriv[i+2:i+2+lookahead] < neg_thresh) & (smooth_2deriv[i+1:i+1+lookahead] < 0)):
-            kink_epoch = int(i + 1 + (lookahead / 2))
-            break
-    """for i in range(len(smooth_deriv) - lookahead):
-        if np.all(smooth_deriv[i+1:i+1+lookahead] < neg_thresh):
-            kink_epoch = int(i + 1 + (lookahead / 2))
-            break"""
+        if np.all((smooth_deriv[i:i+lookahead] < neg_thresh) & (smooth_2deriv[i:i+lookahead] < 0)):
+            kink_epoch.append(int(i + (lookahead / 2)))
 
-    if kink_epoch is None:
+    if kink_epoch == []:
         warnings.warn("kink_epoch is None! Consider changing the parameters.")
-        return kink_epoch
+        return None
+        
+    if len(kink_epoch) > 1:
+        kink_epoch = kink_epoch[1]
+    else:
+        kink_epoch = kink_epoch[0]
         
     # Plotting
     fig, ax1 = plt.subplots(figsize=(8, 5))
@@ -68,7 +72,7 @@ def detect_approx_kink(loss_curve, window_length=11, polyorder=2,
     ax1.grid(True, which='minor', linestyle=':', linewidth=0.3)
 
     ax2 = ax1.twinx()
-    ax2.plot(epochs[1:], smooth_deriv, label='Smoothed dLoss/dEpoch', color='tab:orange', linewidth=2)
+    ax2.plot(epochs, smooth_deriv, label='Smoothed dLoss/dEpoch', color='tab:orange', linewidth=2)
     ax2.set_ylabel("dLoss/dEpoch", color='tab:orange')
     ax2.tick_params(axis='y', labelcolor='tab:orange')
     
