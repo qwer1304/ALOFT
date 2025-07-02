@@ -461,7 +461,10 @@ def main(args):
             checkpoint = torch.hub.load_state_dict_from_url(
                 args.resume, map_location='cpu', check_hash=True)
         else:
-            model_path = args.resume + "/" + args.target + str(args.seed) + "/checkpoint_last.pth"
+            if args.eval:
+                model_path = args.resume + "/" + args.target + "/checkpoint.pth"
+            else:
+                model_path = args.resume + "/" + args.target + str(args.seed) + "/checkpoint_last.pth"
             checkpoint = torch.load(model_path, map_location='cpu')
             checkpoint = {'model': checkpoint}
         model_without_ddp.load_state_dict(checkpoint['model'], strict=False)
