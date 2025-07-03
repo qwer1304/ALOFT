@@ -22,6 +22,7 @@ class Subset(torch.utils.data.Dataset):
 
 def get_train_dataloader(args, patches):
     dataset_list = args.source
+    print("dataset_list:",dataset_list)
     assert isinstance(dataset_list, list)
     datasets = []
     val_datasets = []
@@ -88,7 +89,7 @@ def get_train_dataloader(args, patches):
                 JigsawTestDatasetFreqAnalyse(name_val, labels_val, domain_labels_val, dataset_path=dataset_path,
                                      img_transformer=img_transformer_val, args=args, dataset_list=dataset_list))
         else:
-            print("domain_labels_val:",domain_labels_val)
+            print("domain_labels_val:",domain_labels_val[0])
             val_datasets.append(
                 JigsawTestNewDataset(name_val, labels_val, domain_labels_val, dataset_path=dataset_path,
                                     img_transformer=img_transformer_val, patches=patches, jig_classes=30))
@@ -129,7 +130,7 @@ def get_val_dataloader(args, patches=False, tSNE_flag=0):
         labels = labels_val
         domain_label = domain_label_val
         
-    print("xx:", "domain_label_train:", domain_label_train, "domain_label_val:", domain_label_val)
+    print("xx:", "domain_label_train:", domain_label_train[0], "domain_label_val:", domain_label_val[0], "domain_label:",domain_label)
 
     img_tr = get_val_transformer(args)
     dataset_list = args.source
