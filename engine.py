@@ -104,7 +104,7 @@ def evaluate(data_loader, model, device, header='Test:'):
 
 
 @torch.no_grad()
-def get_feature(data_loader, model, device, norm_flag=0, header='Test:'):
+def get_feature(data_loader, model, device, norm_flag=0, header='Test:', with_domain_label=False):
     metric_logger = utils.MetricLogger(delimiter="  ")
 
     # switch to evaluation mode
@@ -112,20 +112,31 @@ def get_feature(data_loader, model, device, norm_flag=0, header='Test:'):
 
     features = []
     targets = []
-    for (images, target), _ in metric_logger.log_every(data_loader, 200, header):
+    domains = []
+    for x, _ in metric_logger.log_every(data_loader, 200, header):
+        if with_domain_label:
+            images, target, domain = x
+        else:
+            images, target = x
+            domain = torch.empty_like(target)
         images = images.to(device, non_blocking=True)
         target = target.to(device, non_blocking=True)
+        domain = domain.to(device, non_blocking=True)
 
         # compute output
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
         with torch.autocast(device):
             output, _ = model.forward_features(images)
             if norm_flag == 1:
                 output = F.normalize(output, p=2, dim=1)
         features.append(output)
         targets.append(target)
+        domains.append(domain)
     features = torch.cat(features, dim=0)
     targets = torch.cat(targets, dim=0)
+    domainss = torch.cat(domains, dim=0)
 
-    return features, targets
+    if with_domain_labels:
+        return features, targets, domains
+    else:
+        return features, targets
 
