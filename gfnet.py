@@ -104,13 +104,14 @@ class GlobalFilter(nn.Module):
 
         img_abs_ = img_abs.clone()
         if noise_mode != 0:
+            correction = 0
             if uncertainty_model != 0:
                 if uncertainty_model == 1:
                     # batch level modeling
                     miu = torch.mean(img_abs_[:, h_start:h_start + h_crop, w_start:w_start + w_crop, :], dim=(1, 2),
                                      keepdim=True)
                     var = torch.var(img_abs_[:, h_start:h_start + h_crop, w_start:w_start + w_crop, :], dim=(1, 2),
-                                    keepdim=True)
+                                    keepdim=True, correction=correction)
                     sig = (var + self.eps).sqrt()  # Bx1x1xC
 
                     var_of_miu = torch.var(miu, dim=0, keepdim=True)
@@ -147,7 +148,7 @@ class GlobalFilter(nn.Module):
                     miu_of_elem = torch.mean(img_abs_[:, h_start:h_start + h_crop, w_start:w_start + w_crop, :], dim=0,
                                              keepdim=True)
                     var_of_elem = torch.var(img_abs_[:, h_start:h_start + h_crop, w_start:w_start + w_crop, :], dim=0,
-                                            keepdim=True)
+                                            keepdim=True, correction=correction)
                     sig_of_elem = (var_of_elem + self.eps).sqrt()  # 1xHxWxC
 
                     if gauss_or_uniform == 0:
