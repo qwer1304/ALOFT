@@ -163,7 +163,7 @@ def get_args_parser():
 
     parser.add_argument('--resume', default='', help='resume from checkpoint')
     parser.add_argument('--eval', default=0, type=int, help='Perform evaluation only')
-
+    parser.add_argument('--export_eval_features', default=0, type=int, help='Export val & test features')
     parser.add_argument('--data', default='PACS', choices=['CIFAR', 'IMNET', 'INAT', 'INAT19', 'PACS', 'OfficeHome', 'VLCS', 'digits_dg', 'CMNIST'],
                         type=str, help='Image Net dataset path')
     parser.add_argument('--inat-category', default='name',
@@ -483,6 +483,26 @@ def main(args):
         test_stats = evaluate(data_loader_test, model, device, header='Test:')['acc1']
         print(f"Accuracy of the network on the {len(data_loader_val.dataset)} val images: {val_stats:.2f}%")
         print(f"Accuracy of the network on the {len(data_loader_test.dataset)} test images: {test_stats:.2f}%")
+        
+        if args.export_eval_features:
+            data_loader_val = [dataset.set_with_domain_label(True) for dataset in data_loader_val]
+            data_loader_test = [dataset.set_with_domain_label(True) for dataset in data_loader_test]
+            val_feats, val_targets, val_domain_targets  = get_feature(data_loader_val, model, device, header='Val:')
+            test_feats, test_targets, test_domain_targets = get_feature(data_loader_test, model, device, header='Test:')
+            
+            # Save to file
+            torch.save({
+                'features': val_feats,
+                'labels':   val_targets,
+                'domains':  val_domain_targets
+            }, output_dir / "val_features_dump.pt")
+
+            torch.save({
+                'features': test_feats,
+                'labels':   test_targets,
+                'domains':  test_domain_targets
+            }, output_dir / "test_features_dump.pt")
+
         return
 
     print(f"Start training for {args.epochs} epochs")
@@ -547,6 +567,18 @@ def main(args):
         
         if max_accuracy_test == test_stats["acc1"]:
             max_test_epoch = epoch
+
+
+            checkpoint_path = output_dir / 'checkpoint_test_best.pth'
+            if model_ema is not None:
+                utils.save_on_master({
+                    'model': model_without_ddp.state_dict(),
+                    'model_ema': get_state_dict(model_ema),
+                }, checkpoint_path)
+            else:
+                utils.save_on_master({
+                    'model': model_without_ddp.state_dict(),
+                }, checkpoint_path)
 
         if max_accuracy_val == val_stats["acc1"]:
             max_val_test = test_stats['acc1']

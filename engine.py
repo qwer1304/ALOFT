@@ -41,8 +41,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: DistillationLoss,
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         with torch.autocast(device):
             outputs = model(samples)
-            penalty = (outputs ** 2).mean()
-            loss = criterion(samples, outputs, targets.long()) + 1.0 * penalty
+            loss = criterion(samples, outputs, targets.long())
 
         loss_value = loss.item()
 
@@ -105,9 +104,8 @@ def evaluate(data_loader, model, device, header='Test:'):
 
 
 @torch.no_grad()
-def get_feature(data_loader, model, device, norm_flag=0):
+def get_feature(data_loader, model, device, norm_flag=0, header='Test:'):
     metric_logger = utils.MetricLogger(delimiter="  ")
-    header = 'Test:'
 
     # switch to evaluation mode
     model.eval()
