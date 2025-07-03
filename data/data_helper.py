@@ -117,7 +117,7 @@ def get_val_dataloader(args, patches=False, tSNE_flag=0):
                                             val_percentage=args.val_size)
     else:
         name_train, name_val, labels_train, labels_val, domain_label_train, domain_label_val = get_split_domain_info_from_dir(
-            join(dataset_path, args.target), dataset_name=args.data, val_percentage=args.val_size, domain_label=args.target_num)
+            join(dataset_path, args.target), dataset_name=args.data, val_percentage=args.val_size, domain_label=args.target_num+1)
 
     if tSNE_flag == 0:
         names = name_train + name_val
