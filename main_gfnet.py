@@ -501,6 +501,11 @@ def main(args):
                 'domains':  test_domain_targets
             }, output_dir / "test_features_dump.pt")
 
+            for ds in data_loader_val.dataset.datasets:
+                ds.set_with_domain_label(False)
+            for ds in data_loader_test.dataset.datasets:
+                ds.set_with_domain_label(False)
+
         val_stats = evaluate(data_loader_val, model, device, header='Val:')['acc1']
         test_stats = evaluate(data_loader_test, model, device, header='Test:')['acc1']
         print(f"Accuracy of the network on the {len(data_loader_val.dataset)} val images: {val_stats:.2f}%")
