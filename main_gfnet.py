@@ -235,6 +235,7 @@ def main(args):
     utils.init_distributed_mode(args)
 
     domain = get_domain(args.data)
+    args.target_num = args.target
     args.target = domain.pop(args.target)
     args.source = domain
     print("Target domain: {}".format(args.target))
@@ -480,36 +481,35 @@ def main(args):
                 loss_scaler.load_state_dict(checkpoint['scaler'])
 
     if args.eval:
-        if args.export_eval_features:
-            for ds in data_loader_val.dataset.datasets:
-                ds.set_with_domain_label(True)
-            for ds in data_loader_test.dataset.datasets:
-                ds.set_with_domain_label(True)
-            val_feats, val_targets, val_domain_targets  = get_feature(data_loader_val, model, device, header='Val:', with_domain_label=True)
-            test_feats, test_targets, test_domain_targets = get_feature(data_loader_test, model, device, header='Test:', with_domain_label=True)
-            
-            # Save to file
-            torch.save({
-                'features': val_feats,
-                'labels':   val_targets,
-                'domains':  val_domain_targets
-            }, output_dir / "val_features_dump.pt")
-
-            torch.save({
-                'features': test_feats,
-                'labels':   test_targets,
-                'domains':  test_domain_targets
-            }, output_dir / "test_features_dump.pt")
-
-            for ds in data_loader_val.dataset.datasets:
-                ds.set_with_domain_label(False)
-            for ds in data_loader_test.dataset.datasets:
-                ds.set_with_domain_label(False)
-
         val_stats = evaluate(data_loader_val, model, device, header='Val:')['acc1']
         test_stats = evaluate(data_loader_test, model, device, header='Test:')['acc1']
         print(f"Accuracy of the network on the {len(data_loader_val.dataset)} val images: {val_stats:.2f}%")
         print(f"Accuracy of the network on the {len(data_loader_test.dataset)} test images: {test_stats:.2f}%")
+        
+        return
+        
+    if args.export_eval_features:
+        for ds in data_loader_val.dataset.datasets:
+            ds.set_with_domain_label(True)
+        for ds in data_loader_test.dataset.datasets:
+            ds.set_with_domain_label(True)
+        val_feats, val_targets, val_domain_targets  = get_feature(data_loader_val, model, device, header='Val:', with_domain_label=True)
+        test_feats, test_targets, test_domain_targets = get_feature(data_loader_test, model, device, header='Test:', with_domain_label=True)
+
+        # Save to file
+        torch.save({
+            'features': val_feats,
+            'labels':   val_targets,
+            'domains':  val_domain_targets
+        }, output_dir / "val_features_dump.pt")
+
+        torch.save({
+            'features': test_feats,
+            'labels':   test_targets,
+            'domains':  test_domain_targets
+        }, output_dir / "test_features_dump.pt")
+        
+        print(f"Exported features to {output_dir} directory xxxx_features_dump.pt files.") 
         
         return
 
