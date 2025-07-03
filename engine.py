@@ -114,7 +114,6 @@ def get_feature(data_loader, model, device, norm_flag=0, header='Test:', with_do
     targets = []
     domains = []
     for x, _ in metric_logger.log_every(data_loader, 200, header):
-        print(type(x), len(x), [type(y) for y in x], [len(y) for y in x])
         if with_domain_label:
             images, target, domain = x
         else:
@@ -125,6 +124,7 @@ def get_feature(data_loader, model, device, norm_flag=0, header='Test:', with_do
         domain = domain.to(device, non_blocking=True)
 
         # compute output
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
         with torch.autocast(device):
             output, _ = model.forward_features(images)
             if norm_flag == 1:
