@@ -113,8 +113,8 @@ def get_feature(data_loader, model, device, norm_flag=0, header='Test:', with_do
     features = []
     targets = []
     domains = []
-    for (images, target), _ in metric_logger.log_every(data_loader, 200, header):
-        print(type(target))
+    for x, _ in metric_logger.log_every(data_loader, 200, header):
+        print(type(x), type(x[0]), x[0])
         if with_domain_label:
             images, target, domain = x
         else:
