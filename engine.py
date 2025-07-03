@@ -133,9 +133,9 @@ def get_feature(data_loader, model, device, norm_flag=0, header='Test:', with_do
         domains.append(domain)
     features = torch.cat(features, dim=0)
     targets = torch.cat(targets, dim=0)
-    domainss = torch.cat(domains, dim=0)
+    domains = torch.cat(domains, dim=0)
 
-    if with_domain_labels:
+    if with_domain_label:
         return features, targets, domains
     else:
         return features, targets
