@@ -486,8 +486,12 @@ def main(args):
         print(f"Accuracy of the network on the {len(data_loader_test.dataset)} test images: {test_stats:.2f}%")
         
         if args.export_eval_features:
-            data_loader_val = [ds.set_with_domain_label(True) for ds in dataset for dataset in data_loader_val]
-            data_loader_test = [ds.set_with_domain_label(True) for ds in dataset for dataset in data_loader_test]
+            for datasets in data_loader_val:
+                for ds in datasets:
+                    ds.set_with_domain_label(True)
+            for datasets in data_loader_test:
+                for ds in datasets:
+                    ds.set_with_domain_label(True)
             val_feats, val_targets, val_domain_targets  = get_feature(data_loader_val, model, device, header='Val:')
             test_feats, test_targets, test_domain_targets = get_feature(data_loader_test, model, device, header='Test:')
             
