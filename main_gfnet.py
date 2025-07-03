@@ -462,7 +462,8 @@ def main(args):
                 args.resume, map_location='cpu', check_hash=True)
         else:
             if args.eval:
-                model_path = args.resume + "/" + args.target + "/checkpoint.pth"
+                #model_path = args.resume + "/" + args.target + "/checkpoint.pth"
+                model_path = args.resume #+ "/" + args.target + "/checkpoint.pth"
             else:
                 model_path = args.resume + "/" + args.target + str(args.seed) + "/checkpoint_last.pth"
             checkpoint = torch.load(model_path, map_location='cpu')
