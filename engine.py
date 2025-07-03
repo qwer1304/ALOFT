@@ -42,7 +42,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: DistillationLoss,
         with torch.autocast(device):
             outputs = model(samples)
             penalty = (outputs ** 2).mean()
-            loss = criterion(samples, outputs, targets.long()) + 0.5 * penalty
+            loss = criterion(samples, outputs, targets.long()) + 1.0 * penalty
 
         loss_value = loss.item()
 
