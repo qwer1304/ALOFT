@@ -488,6 +488,7 @@ def main(args):
         if args.export_eval_features:
             for datasets in data_loader_val:
                 for ds in datasets:
+                    print(type(data_loader_val), type(datasets), type(ds), ds[0])
                     ds.set_with_domain_label(True)
             for datasets in data_loader_test:
                 for ds in datasets:
