@@ -481,10 +481,10 @@ def main(args):
 
     if args.eval:
         if args.export_eval_features:
-            for ds in data_loader_val: 
-                print(type(data_loader_val), type(ds))
-            data_loader_val.set_with_domain_label(True)
-            data_loader_test.set_with_domain_label(True)
+            for ds in data_loader_val.dataset.datasets:
+                ds.set_with_domain_label(True)
+            for ds in data_loader_test.dataset.datasets:
+                ds.set_with_domain_label(True)
             val_feats, val_targets, val_domain_targets  = get_feature(data_loader_val, model, device, header='Val:')
             test_feats, test_targets, test_domain_targets = get_feature(data_loader_test, model, device, header='Test:')
             
