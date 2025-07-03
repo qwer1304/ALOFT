@@ -480,11 +480,6 @@ def main(args):
                 loss_scaler.load_state_dict(checkpoint['scaler'])
 
     if args.eval:
-        val_stats = evaluate(data_loader_val, model, device, header='Val:')['acc1']
-        test_stats = evaluate(data_loader_test, model, device, header='Test:')['acc1']
-        print(f"Accuracy of the network on the {len(data_loader_val.dataset)} val images: {val_stats:.2f}%")
-        print(f"Accuracy of the network on the {len(data_loader_test.dataset)} test images: {test_stats:.2f}%")
-        
         if args.export_eval_features:
             for ds in data_loader_val: 
                 print(type(data_loader_val), type(ds))
@@ -506,6 +501,11 @@ def main(args):
                 'domains':  test_domain_targets
             }, output_dir / "test_features_dump.pt")
 
+        val_stats = evaluate(data_loader_val, model, device, header='Val:')['acc1']
+        test_stats = evaluate(data_loader_test, model, device, header='Test:')['acc1']
+        print(f"Accuracy of the network on the {len(data_loader_val.dataset)} val images: {val_stats:.2f}%")
+        print(f"Accuracy of the network on the {len(data_loader_test.dataset)} test images: {test_stats:.2f}%")
+        
         return
 
     print(f"Start training for {args.epochs} epochs")
