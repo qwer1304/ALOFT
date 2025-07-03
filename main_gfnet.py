@@ -17,7 +17,7 @@ from timm.utils import NativeScaler, get_state_dict, ModelEma
 from functools import partial
 import torch.nn as nn
 
-from engine import train_one_epoch, evaluate
+from engine import train_one_epoch, evaluate, get_feature
 from losses import DistillationLoss
 import utils
 from gfnet import GFNet, GFNetPyramid
