@@ -5,7 +5,7 @@ import numpy
 import os
 
 dir = './results/CMNIST/'
-filepath = os.path.join(dir, 'val_features_dump.pt')
+filepath = os.path.join(dir, 'test_features_dump.pt')
 # Load
 data = torch.load(filepath, map_location=torch.device('cpu'))
 features = data['features'].numpy()  # convert to numpy
