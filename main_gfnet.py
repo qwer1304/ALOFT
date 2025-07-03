@@ -462,7 +462,7 @@ def main(args):
             checkpoint = torch.hub.load_state_dict_from_url(
                 args.resume, map_location='cpu', check_hash=True)
         else:
-            if args.eval:
+            if args.eval or args.export_eval_features:
                 #model_path = args.resume + "/" + args.target + "/checkpoint.pth"
                 model_path = args.resume #+ "/" + args.target + "/checkpoint.pth"
             else:
@@ -470,7 +470,7 @@ def main(args):
             checkpoint = torch.load(model_path, map_location='cpu')
             checkpoint = {'model': checkpoint}
         model_without_ddp.load_state_dict(checkpoint['model'], strict=False)
-        if not args.eval and 'optimizer' in checkpoint and 'lr_scheduler' in checkpoint and 'epoch' in checkpoint:
+        if not (args.eval or args.export_eval_features) and 'optimizer' in checkpoint and 'lr_scheduler' in checkpoint and 'epoch' in checkpoint:
             optimizer.load_state_dict(checkpoint['optimizer'])
             print('lr scheduler will not be updated')
             # lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
