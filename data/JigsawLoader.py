@@ -334,8 +334,6 @@ class JigsawNewDataset(data.Dataset):
             self.returnFunc = identity
         else:
             self.returnFunc = partial(make_grid_fn, grid_size=self.grid_size)
-            
-        self.with_domain_label = False
 
     def get_tile(self, img, n):
         w = float(img.size[0]) / self.grid_size
@@ -354,10 +352,7 @@ class JigsawNewDataset(data.Dataset):
         framename = self.data_path + '/' + self.names[index]
         img = Image.open(framename).convert('RGB')
         # image, image_randaug, label, domain
-        if self.with_domain_label:
-            return self._image_transformer(img), int(self.labels[index] - 1), int(self.domain_labels[index] - 1)
-        else:
-            return self._image_transformer(img), int(self.labels[index] - 1)
+        return self._image_transformer(img), int(self.labels[index] - 1)
 
     def __len__(self):
         return len(self.names)
