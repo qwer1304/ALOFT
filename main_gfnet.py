@@ -463,12 +463,11 @@ def main(args):
                 args.resume, map_location='cpu', check_hash=True)
         else:
             if args.eval or args.export_eval_features:
-                #model_path = args.resume + "/" + args.target + "/checkpoint.pth"
-                model_path = args.resume #+ "/" + args.target + "/checkpoint.pth"
+                model_path = args.resume #     + "/" + args.target + "/checkpoint.pth"
             else:
                 model_path = args.resume + "/" + args.target + str(args.seed) + "/checkpoint_last.pth"
             checkpoint = torch.load(model_path, map_location='cpu')
-            checkpoint = {'model': checkpoint}
+            #checkpoint = {'model': checkpoint}
         model_without_ddp.load_state_dict(checkpoint['model'], strict=True)
         if not (args.eval or args.export_eval_features) and 'optimizer' in checkpoint and 'lr_scheduler' in checkpoint and 'epoch' in checkpoint:
             optimizer.load_state_dict(checkpoint['optimizer'])
