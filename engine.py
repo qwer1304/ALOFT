@@ -127,7 +127,7 @@ def get_feature(data_loader, model, device, norm_flag=0, header='Test:', with_do
         # compute output
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         with torch.autocast(device):
-            output, _ = model.forward_features(images)
+            output = model.forward_features(images)
             if norm_flag == 1:
                 output = F.normalize(output, p=2, dim=1)
         features.append(output)
