@@ -363,9 +363,6 @@ class JigsawNewDataset(data.Dataset):
         if all_perm.min() == 1:
             all_perm = all_perm - 1
         return all_perm
-        
-    def set_with_domain_label(self, value):
-        self.with_domain_label = value
 
 class JigsawTestNewDataset(JigsawNewDataset):
     def __init__(self, *args, **xargs):
