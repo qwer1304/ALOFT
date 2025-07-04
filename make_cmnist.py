@@ -9,6 +9,8 @@ from PIL import Image
 import pandas as pd
 ## Progress bar
 from tqdm.auto import tqdm
+import numpy as np
+import random
 
 
 class MultipleDomainDataset:
@@ -57,7 +59,7 @@ class MultipleEnvironmentMNIST(MultipleDomainDataset):
 
 class ColoredMNIST(MultipleEnvironmentMNIST):
 
-    def __init__(self, root):
+    def __init__(self, root, color_label=False):
         ENVIRONMENTS = ['p90', 'p85', 'p80', 'p75', 'm90']
         #                                 (root, environments,                dataset_transform,  input_shape,  num_classes)
         super(ColoredMNIST, self).__init__(root, [0.1, 0.15, 0.2, 0.25, 0.9], self.color_dataset, (3, 28, 28,), 2)
@@ -66,6 +68,7 @@ class ColoredMNIST(MultipleEnvironmentMNIST):
         self.num_classes = 2
         self.N_WORKERS = 1
         self.environments = ENVIRONMENTS
+        self.color_label = color_label
 
     def color_dataset(self, images, labels, environment):
         # Assign a binary label based on the digit
@@ -84,7 +87,7 @@ class ColoredMNIST(MultipleEnvironmentMNIST):
         images[torch.tensor(range(len(images))), (1 - colors).long(), :, :] *= 0
 
         x = images.float().div_(255.0)
-        y = labels.view(-1).long()
+        y = labels.view(-1).long() if not self.color_label else colors.view(-1).long()
 
         return TensorDataset(x, y)
 
@@ -95,6 +98,8 @@ class ColoredMNIST(MultipleEnvironmentMNIST):
         return (a - b).abs()
 
 def main(args):
+    random.seed(args.seed)
+    np.random.seed(args.seed)
     # datasets is a list of per-environment TensorDatasets (x,y)
     save_dir_raw = args.output_dir + 'raw/'
     os.makedirs(save_dir_raw, exist_ok=True)
@@ -103,7 +108,7 @@ def main(args):
     save_dir_kfold = args.output_dir + 'kfold/'
     os.makedirs(save_dir_kfold, exist_ok=True)
 
-    datasets = ColoredMNIST(save_dir_raw)
+    datasets = ColoredMNIST(save_dir_raw, color_label=args.color_label)
 
     for d, dataset in tqdm(enumerate(datasets), leave=False, total=len(datasets)):
         save_dir_domain = save_dir_kfold + datasets.environments[d] + '/' 
@@ -175,6 +180,8 @@ if __name__ == "__main__":
     parser.add_argument('--output_dir', type=str, default="./data/DataSets/CMNIST/")
     parser.add_argument('--target_image_size', type=int, default=64)
     parser.add_argument('--val_domains_only', type=str, nargs='+', default=None, help='Use this to assign some domains ONLY as validation ones.')
+    parser.add_argument('--seed', type=int, default=0)
+    parser.add_argument('color_label', action='store_true', help='use color instead of label: 0 - red, 1 - green')
     args = parser.parse_args()
     
     main(args)

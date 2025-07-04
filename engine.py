@@ -78,7 +78,8 @@ def evaluate(data_loader, model, device, header='Test:'):
     # switch to evaluation mode
     model.eval()
 
-    for (images, target), _ in metric_logger.log_every(data_loader, 200, header):
+    for (images, target), z in metric_logger.log_every(data_loader, 200, header):
+        print("evaluate", "images:",images.size(),"targets:",targets.size(),"z:",z.size())
         images = images.to(device, non_blocking=True)
         target = target.to(device, non_blocking=True)
 
@@ -113,7 +114,8 @@ def get_feature(data_loader, model, device, norm_flag=0, header='Test:', with_do
     features = []
     targets = []
     domains = []
-    for x, _ in metric_logger.log_every(data_loader, 200, header):
+    for x, z in metric_logger.log_every(data_loader, 200, header):
+        print("get_features", "x:",x.size(),"z:",z.size())
         if with_domain_label:
             images, target, domain = x
         else:

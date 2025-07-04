@@ -576,7 +576,6 @@ def main(args):
         if max_accuracy_test == test_stats["acc1"]:
             max_test_epoch = epoch
 
-
             checkpoint_path = output_dir / 'checkpoint_test_best.pth'
             if model_ema is not None:
                 utils.save_on_master({
