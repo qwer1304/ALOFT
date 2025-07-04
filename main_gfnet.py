@@ -486,8 +486,6 @@ def main(args):
         print(f"Accuracy of the network on the {len(data_loader_val.dataset)} val images: {val_stats:.2f}%")
         print(f"Accuracy of the network on the {len(data_loader_test.dataset)} test images: {test_stats:.2f}%")
         
-        return
-        
     if args.export_eval_features:
         for ds in data_loader_val.dataset.datasets:
             ds.set_with_domain_label(True)
@@ -510,9 +508,10 @@ def main(args):
         }, output_dir / "test_features_dump.pt")
         
         print(f"Exported features to {output_dir} directory xxxx_features_dump.pt files.") 
-        
-        return
 
+    if args.eval or args.export_eval_features:
+        return
+        
     print(f"Start training for {args.epochs} epochs")
     start_time = time.time()
     max_accuracy_test = 0.0

@@ -67,6 +67,8 @@ def main(args):
 
     axs[i].legend()
     axs[i].set_title(f"t-SNE colored by {target}")
+    
+    fig.suptitle(f"model: {args.model}")
 
     plt.savefig(os.path.join(dir, f"tsne_{args.model}.jpg"), format='jpg')
     os.startfile(os.path.abspath(os.path.join(dir, f"tsne_{args.model}.jpg")))
