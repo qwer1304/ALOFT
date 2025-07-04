@@ -462,20 +462,15 @@ def main(args):
             checkpoint = torch.hub.load_state_dict_from_url(
                 args.resume, map_location='cpu', check_hash=True)
         else:
-            if True or args.eval or args.export_eval_features:
-                model_path = args.resume #     + "/" + args.target + "/checkpoint.pth"
+            if args.eval or args.export_eval_features:
+                #model_path = args.resume + "/" + args.target + "/checkpoint.pth"
+                model_path = args.resume #+ "/" + args.target + "/checkpoint.pth"
             else:
                 model_path = args.resume + "/" + args.target + str(args.seed) + "/checkpoint_last.pth"
             checkpoint = torch.load(model_path, map_location='cpu')
-            #checkpoint = {'model': checkpoint}
-
-        state_dict = model.state_dict()
-        checkpoint_model = checkpoint['model']
-        for k in state_dict.keys():
-            if k in checkpoint_model and checkpoint_model[k].shape != state_dict[k].shape:
-                print(f"key {k} shape mismatch chk: {checkpoint_model[k].shape} model: {state_dict[k].shape} ")
-
-        #model_without_ddp.load_state_dict(checkpoint['model'], strict=False)
+            checkpoint = {'model': checkpoint}
+            
+        model_without_ddp.load_state_dict(checkpoint['model'], strict=False)
         if not (args.eval or args.export_eval_features) and 'optimizer' in checkpoint and 'lr_scheduler' in checkpoint and 'epoch' in checkpoint:
             optimizer.load_state_dict(checkpoint['optimizer'])
             print('lr scheduler will not be updated')
@@ -517,7 +512,7 @@ def main(args):
 
     if args.eval or args.export_eval_features:
         return
-
+        
     print(f"Start training for {args.epochs} epochs")
     start_time = time.time()
     max_accuracy_test = 0.0
@@ -532,11 +527,6 @@ def main(args):
         args.set_training_mode = False
 
     for epoch in range(args.start_epoch, args.epochs):
-        state_dict = model.state_dict()
-        for k in state_dict.keys():
-            if k in checkpoint_model and checkpoint_model[k].shape != state_dict[k].shape:
-                print(f"epoch: {epoch}, key {k} shape mismatch chk: {checkpoint_model[k].shape} model: {state_dict[k].shape} ")
-        
         if args.distributed:
             data_loader_train.sampler.set_epoch(epoch)
 
