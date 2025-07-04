@@ -25,6 +25,7 @@ def main(args):
             features.append(data['features'].numpy())  # convert to numpy
             labels.append(data['labels'].numpy())
             domains.append(data['domains'].numpy())
+        exit()
         features = np.concatenate(features, axis=0)
         labels = np.concatenate(labels, axis=0)
         domains = np.concatenate(domains, axis=0)
