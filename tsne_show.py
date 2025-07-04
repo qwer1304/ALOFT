@@ -19,29 +19,39 @@ def main(args):
         features = []
         labels = []
         domains = []
+        weights = []
+        biases = []
         # Load
         for fp in filepaths:
             data = torch.load(fp, map_location=torch.device('cpu'))
             features.append(data['features'].numpy())  # convert to numpy
             labels.append(data['labels'].numpy())
             domains.append(data['domains'].numpy())
-        exit()
+            weights.append(data['weights'].numpy()) # (num_classes, embed_dim)
+            biases.append(data['biases'].numpy())   # (num_classes,)
         features = np.concatenate(features, axis=0)
         labels = np.concatenate(labels, axis=0)
         domains = np.concatenate(domains, axis=0)
+        weights = np.concatenate(weights, axis=0)
+        biases = np.concatenate(biases, axis=0)
+        n_classes = data['n_classes'].numpy()     # all models have the same number; use the last one
 
         # t-SNE
         tsne = TSNE(n_components=2, perplexity=args.perplexity, random_state=0, verbose=2, max_iter=args.max_iter, init='pca')
-        features_2d = tsne.fit_transform(features)
+        features_2d = tsne.fit_transform(np.concatenate(features, weights, axis=0))
+        weights_2d = features_2d[-n_classes,:]  
+        np.delete(features_2d, [-num_classes:], axis=0)
 
         np.save(os.path.join(dir,f"features_2d_{args.model}.npy"), features_2d)
         np.save(os.path.join(dir,f"labels_{args.model}.npy"), labels)
         np.save(os.path.join(dir,f"domains_{args.model}.npy"), domains)
+        np.save(os.path.join(dir,f"weights_{args.model}.npy"), weights)
         
     else:
         features_2d = np.load(os.path.join(dir,f"features_2d_{args.model}.npy"))
         labels = np.load(os.path.join(dir,f"labels_{args.model}.npy"))
         domains = np.load(os.path.join(dir,f"domains_{args.model}.npy"))
+        weights = np.load(os.path.join(dir,f"weights_{args.model}.npy"))
 
     fig, axs = plt.subplots(1, 2, figsize=(12, 5))  # 1 row, 2 columns
 
@@ -50,9 +60,10 @@ def main(args):
     target = "class"
 
     u_lls = np.unique(lls)
-    for l in u_lls:
+    for li, l in enumerate(u_lls):
         idx = (lls == l)
-        axs[i].scatter(features_2d[idx, 0], features_2d[idx, 1], label=f"Class {l}", alpha=0.6, s=2, marker=".")
+        axs[i].scatter(features_2d[idx, 0], features_2d[idx, 1], label=f"{target}: {l}", alpha=0.6, s=2, marker=".")
+        axs[i].scatter(weights[li, 0], weights[li, 1], label=f"weight {target}: {l}", alpha=0.6, s=4, marker="*")
 
     axs[i].legend()
     axs[i].set_title(f"t-SNE colored by {target}")

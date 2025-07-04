@@ -479,6 +479,8 @@ def main(args):
                 utils._load_checkpoint_for_ema(model_ema, checkpoint['model_ema'])
             if 'scaler' in checkpoint:
                 loss_scaler.load_state_dict(checkpoint['scaler'])
+                
+        checkpoint_epoch = checkpoint['epoch']
 
     if args.eval:
         val_stats = evaluate(data_loader_val, model, device, header='Val:')['acc1']
@@ -498,13 +500,21 @@ def main(args):
         torch.save({
             'features': val_feats,
             'labels':   val_targets,
-            'domains':  val_domain_targets
+            'domains':  val_domain_targets,
+            'model_epoch':  checkpoint_epoch,
+            'head_weights': model.head.weights, # shape: (num_classes, embed_dim)
+            'head_bias':    model.head.bias,    # shape: (num_classes,)
+            'n_classes':    args.n_classes,
         }, output_dir / "val_features_dump.pt")
 
         torch.save({
             'features': test_feats,
             'labels':   test_targets,
-            'domains':  test_domain_targets
+            'domains':  test_domain_targets,
+            'model_epoch':    checkpoint_epoch,
+            'head_weights': model.head.weights, # shape: (num_classes, embed_dim)
+            'head_bias':    model.head.bias,    # shape: (num_classes,)
+            'n_classes':    args.n_classes,
         }, output_dir / "test_features_dump.pt")
         
         print(f"Exported features to {output_dir} directory xxxx_features_dump.pt files.") 
@@ -545,10 +555,12 @@ def main(args):
                     utils.save_on_master({
                         'model': model_without_ddp.state_dict(),
                         'model_ema': get_state_dict(model_ema),
+                        'epoch': epoch,
                     }, checkpoint_path)
                 else:
                     utils.save_on_master({
                         'model': model_without_ddp.state_dict(),
+                        'epoch': epoch,
                     }, checkpoint_path)
         
         if (epoch + 1) % 100 == 0:
@@ -580,10 +592,12 @@ def main(args):
                 utils.save_on_master({
                     'model': model_without_ddp.state_dict(),
                     'model_ema': get_state_dict(model_ema),
+                    'epoch': max_test_epoch,
                 }, checkpoint_path)
             else:
                 utils.save_on_master({
                     'model': model_without_ddp.state_dict(),
+                    'epoch': max_test_epoch,
                 }, checkpoint_path)
 
         if max_accuracy_val == val_stats["acc1"]:
@@ -595,10 +609,12 @@ def main(args):
                 utils.save_on_master({
                     'model': model_without_ddp.state_dict(),
                     'model_ema': get_state_dict(model_ema),
+                    'epoch': max_val_epoch,
                 }, checkpoint_path)
             else:
                 utils.save_on_master({
                     'model': model_without_ddp.state_dict(),
+                    'epoch': max_val_epoch,
                 }, checkpoint_path)
 
         print(f'Max accuracy val: {max_accuracy_val:.2f}%', f'Epoch: {max_val_epoch}')
