@@ -10,8 +10,10 @@ def main(args):
     if not args.skip_tsne:
         if args.model == 'val':
             filepaths = [os.path.join(dir, 'val_features_dump.pt'), os.path.join(dir, 'test_features_dump.pt')]
-        elif args.model == 'test':
+        elif args.model == 'best':
             filepaths = [os.path.join(dir, 'val_test_best_features_dump.pt'), os.path.join(dir, 'test_best_features_dump.pt')]
+        elif args.model == 'last':
+            filepaths = [os.path.join(dir, 'val_last_features_dump.pt'), os.path.join(dir, 'test_last_features_dump.pt')]
         else:
             raise ValueError(f"Unknown model {args.model}")
         features = []
@@ -74,7 +76,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='t-sne')
     parser.add_argument('--data_dir', type=str, default='./results/CMNIST/')
     parser.add_argument('--skip_tsne', action='store_true')
-    parser.add_argument('--model', type=str, default="val", choices=["val", "test"])
+    parser.add_argument('--model', type=str, default="val", choices=["val", "best", "last"])
     parser.add_argument('--max_iter', type=int, default=1000, help='for tsne; at least 250')
     parser.add_argument('--perplexity', type=int, default=30)
     args = parser.parse_args()
