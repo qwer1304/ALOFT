@@ -489,7 +489,7 @@ def main(args):
         return
         
     if args.export_eval_features:
-        print(data_loader_val)
+        print(data_loader_val.dataset)
         val_feats, val_targets, val_domain_targets  = get_feature(data_loader_val, model, device, header='Val:', with_domain_label=True)
         test_feats, test_targets, test_domain_targets = get_feature(data_loader_test, model, device, header='Test:', with_domain_label=True)
 
