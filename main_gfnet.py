@@ -502,7 +502,7 @@ def main(args):
             'labels':   val_targets,
             'domains':  val_domain_targets,
             'model_epoch':  checkpoint_epoch,
-            'head_weights': model.head.weights, # shape: (num_classes, embed_dim)
+            'head_weights': model.head.weight, # shape: (num_classes, embed_dim)
             'head_bias':    model.head.bias,    # shape: (num_classes,)
             'n_classes':    args.n_classes,
         }, output_dir / "val_features_dump.pt")
@@ -512,7 +512,7 @@ def main(args):
             'labels':   test_targets,
             'domains':  test_domain_targets,
             'model_epoch':    checkpoint_epoch,
-            'head_weights': model.head.weights, # shape: (num_classes, embed_dim)
+            'head_weights': model.head.weight, # shape: (num_classes, embed_dim)
             'head_bias':    model.head.bias,    # shape: (num_classes,)
             'n_classes':    args.n_classes,
         }, output_dir / "test_features_dump.pt")
