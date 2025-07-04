@@ -374,10 +374,7 @@ class JigsawTestNewDataset(JigsawNewDataset):
     def __getitem__(self, index):
         framename = self.data_path + '/' + self.names[index]
         img = Image.open(framename).convert('RGB')
-        if self.with_domain_label:
-            return self._image_transformer(img), int(self.labels[index] - 1), int(self.domain_labels[index] - 1)
-        else:
-            return self._image_transformer(img), int(self.labels[index] - 1)
+        return self._image_transformer(img), int(self.labels[index] - 1)
 
 # from .randaug import RandAugment
 #
