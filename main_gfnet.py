@@ -311,7 +311,7 @@ def main(args):
 
 
     if args.finetune:
-        #args.finetune += "/" + args.arch + ".pth"
+        args.finetune += "/" + args.arch + ".pth"
 
         if args.finetune.startswith('https'):
             checkpoint = torch.hub.load_state_dict_from_url(
@@ -468,6 +468,13 @@ def main(args):
                 model_path = args.resume + "/" + args.target + str(args.seed) + "/checkpoint_last.pth"
             checkpoint = torch.load(model_path, map_location='cpu')
             #checkpoint = {'model': checkpoint}
+
+        state_dict = model.state_dict()
+        checkpoint_model = checkpoint['model']
+        for k in state_dict.keys():
+            if k in checkpoint_model and checkpoint_model[k].shape != state_dict[k].shape:
+                print(f"key {k} shape mismatch")
+
         model_without_ddp.load_state_dict(checkpoint['model'], strict=False)
         if not (args.eval or args.export_eval_features) and 'optimizer' in checkpoint and 'lr_scheduler' in checkpoint and 'epoch' in checkpoint:
             optimizer.load_state_dict(checkpoint['optimizer'])
