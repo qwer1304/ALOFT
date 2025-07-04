@@ -462,7 +462,7 @@ def main(args):
             checkpoint = torch.hub.load_state_dict_from_url(
                 args.resume, map_location='cpu', check_hash=True)
         else:
-            if args.eval or args.export_eval_features:
+            if True or args.eval or args.export_eval_features:
                 model_path = args.resume #     + "/" + args.target + "/checkpoint.pth"
             else:
                 model_path = args.resume + "/" + args.target + str(args.seed) + "/checkpoint_last.pth"
