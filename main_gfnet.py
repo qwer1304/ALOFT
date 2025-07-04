@@ -473,7 +473,7 @@ def main(args):
         checkpoint_model = checkpoint['model']
         for k in state_dict.keys():
             if k in checkpoint_model and checkpoint_model[k].shape != state_dict[k].shape:
-                print(f"key {k} shape mismatch")
+                print(f"key {k} shape mismatch chk: {checkpoint_model[k].shape} model: {state_dict[k].shape} ")
 
         model_without_ddp.load_state_dict(checkpoint['model'], strict=False)
         if not (args.eval or args.export_eval_features) and 'optimizer' in checkpoint and 'lr_scheduler' in checkpoint and 'epoch' in checkpoint:
