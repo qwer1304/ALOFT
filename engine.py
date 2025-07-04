@@ -113,8 +113,13 @@ def get_feature(data_loader, model, device, norm_flag=0, header='Test:', with_do
     features = []
     targets = []
     domains = []
-    for (images, target), domain in metric_logger.log_every(data_loader, 200, header):
-    
+    for x, _ in metric_logger.log_every(data_loader, 200, header):
+        if with_domain_label:
+            images, target, domain = x
+        else:
+            images, target = x
+            domain = torch.empty_like(target)
+        
         images = images.to(device, non_blocking=True)
         target = target.to(device, non_blocking=True)
         domain = domain.to(device, non_blocking=True)
@@ -122,7 +127,7 @@ def get_feature(data_loader, model, device, norm_flag=0, header='Test:', with_do
         # compute output
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         with torch.autocast(device):
-            output = model.forward_features(images)
+            output, _ = model.forward_features(images)
             if norm_flag == 1:
                 output = F.normalize(output, p=2, dim=1)
         features.append(output)
