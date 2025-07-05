@@ -23,7 +23,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: DistillationLoss,
                     data_loader: Iterable, optimizer: torch.optim.Optimizer,
                     device: torch.device, epoch: int, loss_scaler, max_norm: float = 0,
                     model_ema: Optional[ModelEma] = None, mixup_fn: Optional[Mixup] = None,
-                    set_training_mode=True):
+                    set_training_mode=True, penalty_scaler: float = 0):
     model.train(set_training_mode)
 
     metric_logger = utils.MetricLogger(delimiter="  ")
@@ -40,8 +40,11 @@ def train_one_epoch(model: torch.nn.Module, criterion: DistillationLoss,
 
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         with torch.autocast(device):
+        all_p = self.predict(all_x)
+
             outputs = model(samples)
-            loss = criterion(samples, outputs, targets.long())
+            penalty = (outputs ** 2).mean() # SD
+            loss = criterion(samples, outputs, targets.long()) + penalty_scaler * penalty
 
         loss_value = loss.item()
 

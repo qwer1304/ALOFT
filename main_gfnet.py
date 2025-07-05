@@ -196,6 +196,11 @@ def get_args_parser():
     parser.add_argument('--world_size', default=1, type=int,
                         help='number of distributed processes')
     parser.add_argument('--dist_url', default='env://', help='url used to set up distributed training')
+    
+    # regularizer parameters
+    parser.add_argument('--penalty_scaler', default=0.0, type=float,
+                        help='regularizer scaler')
+    
     return parser
 
 
@@ -544,6 +549,7 @@ def main(args):
             optimizer, device, epoch, loss_scaler,
             args.clip_grad, model_ema, mixup_fn,
             set_training_mode=args.set_training_mode,  # keep in eval mode during finetuning
+            penalty_scaler = args.penalty_scaler,
         )
 
         lr_scheduler.step(epoch)
