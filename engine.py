@@ -40,8 +40,6 @@ def train_one_epoch(model: torch.nn.Module, criterion: DistillationLoss,
 
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         with torch.autocast(device):
-        all_p = self.predict(all_x)
-
             outputs = model(samples)
             penalty = (outputs ** 2).mean() # SD
             loss = criterion(samples, outputs, targets.long()) + penalty_scaler * penalty
